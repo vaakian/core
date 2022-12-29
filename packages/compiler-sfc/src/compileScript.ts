@@ -42,7 +42,10 @@ import {
   ObjectMethod,
   LVal,
   Expression,
-  VariableDeclaration
+  VariableDeclaration,
+  ImportSpecifier,
+  ImportDefaultSpecifier,
+  ImportNamespaceSpecifier
 } from '@babel/types'
 import { walk } from 'estree-walker'
 import { RawSourceMap } from 'source-map'
@@ -375,10 +378,24 @@ export function compileScript(
     s.move(start, end, 0)
   }
 
+  function getImported(
+    specifier:
+      | ImportSpecifier
+      | ImportDefaultSpecifier
+      | ImportNamespaceSpecifier
+  ) {
+    if (specifier.type === 'ImportSpecifier')
+      return specifier.imported.type === 'Identifier'
+        ? specifier.imported.name
+        : specifier.imported.value
+    else if (specifier.type === 'ImportNamespaceSpecifier') return '*'
+    return 'default'
+  }
+
   function registerUserImport(
     source: string,
     local: string,
-    imported: string | false,
+    imported: string,
     isType: boolean,
     isFromSetup: boolean,
     needTemplateUsageCheck: boolean
@@ -398,7 +415,7 @@ export function compileScript(
 
     userImports[local] = {
       isType,
-      imported: imported || 'default',
+      imported,
       local,
       source,
       isFromSetup,
@@ -951,10 +968,7 @@ export function compileScript(
       if (node.type === 'ImportDeclaration') {
         // record imports for dedupe
         for (const specifier of node.specifiers) {
-          const imported =
-            specifier.type === 'ImportSpecifier' &&
-            specifier.imported.type === 'Identifier' &&
-            specifier.imported.name
+          const imported = getImported(specifier)
           registerUserImport(
             node.source.value,
             specifier.local.name,
@@ -996,13 +1010,7 @@ export function compileScript(
       for (let i = 0; i < node.specifiers.length; i++) {
         const specifier = node.specifiers[i]
         const local = specifier.local.name
-        let imported =
-          specifier.type === 'ImportSpecifier' &&
-          specifier.imported.type === 'Identifier' &&
-          specifier.imported.name
-        if (specifier.type === 'ImportNamespaceSpecifier') {
-          imported = '*'
-        }
+        const imported = getImported(specifier)
         const source = node.source.value
         const existing = userImports[local]
         if (
