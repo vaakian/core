@@ -43,10 +43,7 @@ import {
   ObjectMethod,
   LVal,
   Expression,
-  VariableDeclaration,
-  ImportSpecifier,
-  ImportDefaultSpecifier,
-  ImportNamespaceSpecifier
+  VariableDeclaration
 } from '@babel/types'
 import { walk } from 'estree-walker'
 import { RawSourceMap } from 'source-map'
