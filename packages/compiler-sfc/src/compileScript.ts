@@ -9,7 +9,8 @@ import {
   UNREF,
   SimpleExpressionNode,
   isFunctionType,
-  walkIdentifiers
+  walkIdentifiers,
+  getImportedName
 } from '@vue/compiler-dom'
 import { DEFAULT_FILENAME, SFCDescriptor, SFCScriptBlock } from './parse'
 import {
@@ -376,20 +377,6 @@ export function compileScript(
       end++
     }
     s.move(start, end, 0)
-  }
-
-  function getImported(
-    specifier:
-      | ImportSpecifier
-      | ImportDefaultSpecifier
-      | ImportNamespaceSpecifier
-  ) {
-    if (specifier.type === 'ImportSpecifier')
-      return specifier.imported.type === 'Identifier'
-        ? specifier.imported.name
-        : specifier.imported.value
-    else if (specifier.type === 'ImportNamespaceSpecifier') return '*'
-    return 'default'
   }
 
   function registerUserImport(
@@ -968,7 +955,7 @@ export function compileScript(
       if (node.type === 'ImportDeclaration') {
         // record imports for dedupe
         for (const specifier of node.specifiers) {
-          const imported = getImported(specifier)
+          const imported = getImportedName(specifier)
           registerUserImport(
             node.source.value,
             specifier.local.name,
@@ -1010,7 +997,7 @@ export function compileScript(
       for (let i = 0; i < node.specifiers.length; i++) {
         const specifier = node.specifiers[i]
         const local = specifier.local.name
-        const imported = getImported(specifier)
+        const imported = getImportedName(specifier)
         const source = node.source.value
         const existing = userImports[local]
         if (
