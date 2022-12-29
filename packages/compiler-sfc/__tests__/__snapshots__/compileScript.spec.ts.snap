@@ -975,7 +975,7 @@ return { ref }
 }"
 `;
 
-exports[`SFC compile <script setup> > imports > shuold support module string names syntax 1`] = `
+exports[`SFC compile <script setup> > imports > should support module string names syntax 1`] = `
 "import { \\"😏\\" as foo } from './foo'
       
 export default {

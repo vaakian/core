@@ -410,7 +410,7 @@ defineExpose({ foo: 123 })
       })
     })
 
-    test('shuold support module string names syntax', () => {
+    test('should support module string names syntax', () => {
       const { content, bindings } = compile(`
       <script>
         import { "😏" as foo } from './foo'
