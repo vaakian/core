@@ -622,6 +622,9 @@ function validateProp(
   if (type != null && type !== true) {
     let isValid = false
     const types = isArray(type) ? type : [type]
+    if (types.includes(null as any)) {
+      return
+    }
     const expectedTypes = []
     // value is valid as long as one of the specified types match
     for (let i = 0; i < types.length && !isValid; i++) {
