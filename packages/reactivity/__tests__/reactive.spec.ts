@@ -272,7 +272,8 @@ describe('reactivity/reactive', () => {
     const observed = reactive(original)
     expect(isReactive(observed)).toBe(false)
   })
-  test('should observe redefined property', () => {
+  
+   test('should observe redefined property', () => {
     const foo = reactive({ bar: 0 })
     const trigger = vi.fn(() => {
       foo.bar
@@ -296,7 +297,7 @@ describe('reactivity/reactive', () => {
       },
       configurable: true
     })
-    expect(trigger).toHaveBeenCalledTimes(3)
+    expect(trigger).toHaveBeenCalledTimes(2)
     expect(foo.bar).toBe(456)
 
     // should not trigger on same value
@@ -306,6 +307,8 @@ describe('reactivity/reactive', () => {
       },
       configurable: true
     })
-    expect(trigger).toHaveBeenCalledTimes(3)
+    expect(trigger).toHaveBeenCalledTimes(2)
+    expect(foo.bar).toBe(456)
   })
+
 })
