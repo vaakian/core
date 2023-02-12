@@ -226,16 +226,34 @@ function defineProperty(
   descriptor: PropertyDescriptor & ThisType<any>
 ): boolean {
   const hadKey = hasOwn(target, key)
-  const oldValue = (target as any)[key]
+  let oldValue = (target as any)[key]
+  let value
+
+  if (descriptor.value) {
+    value = descriptor.value
+    if (isReadonly(oldValue) && isRef(oldValue) && !isRef(value)) {
+      return false
+    }
+    if (!shallowReadonlyMap.get(target) && !shallowReactiveMap.get(target)) {
+      if (!isShallow(value) && !isReadonly(value)) {
+        oldValue = toRaw(oldValue)
+        value = toRaw(value)
+      }
+      if (!isArray(target) && isRef(oldValue) && !isRef(value)) {
+        oldValue.value = value
+        return true
+      }
+    } else {
+    }
+    descriptor.value = value
+  }
+
   const result = Reflect.defineProperty(target, key, descriptor)
-
-  if (result && !insideSetTrap) {
-    const newValue = (target as any)[key]
-
+  if (value && result && !insideSetTrap) {
     if (!hadKey) {
-      trigger(target, TriggerOpTypes.ADD, key, newValue)
-    } else if (hasChanged(newValue, oldValue)) {
-      trigger(target, TriggerOpTypes.SET, key, newValue, oldValue)
+      trigger(target, TriggerOpTypes.ADD, key, value)
+    } else if (hasChanged(value, oldValue)) {
+      trigger(target, TriggerOpTypes.SET, key, value, oldValue)
     }
   }
   return result
